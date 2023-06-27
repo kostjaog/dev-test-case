@@ -1,41 +1,38 @@
 import {
-    Body,
-    Controller,
-    HttpException,
-    HttpStatus,
-    Post,
-    UseGuards,
-    UseInterceptors
+Body,
+Controller,
+Get,
+HttpCode,
+HttpStatus,
+Post,
+Request,
+UseGuards
 } from '@nestjs/common';
-import {AuthService, RegistrationSeederStatus, RegistrationStatus} from "./auth.service";
-import {CreateUserDto, LoginUserDto} from "../users/dto/create-user.dto";
-import {ApiBearerAuth, ApiSecurity, ApiTags} from "@nestjs/swagger";
+import { AuthGuard } from './auth.guard';
+import { AuthService } from './auth.service';
 
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { LoginDTO } from 'src/users/dto/login.dto';
 
-
-@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private readonly authService: AuthService,
-        ) {}
+constructor(private authService: AuthService) {}
 
-    @Post('register')
-    public async register(@Body() createUserDto: CreateUserDto,  ): 
-       Promise<RegistrationStatus> {
-        const result:RegistrationStatus = await 
-              this.authService.register(createUserDto,);
-        if (!result.success) {
-            throw new HttpException(result.message,  
-               HttpStatus.BAD_REQUEST);
-        }
-        return result;
-    }
+@HttpCode(HttpStatus.OK)
+@Post('login')
+signIn(@Body() signInData: LoginDTO) {
+    return this.authService.signIn(signInData.email, signInData.password);
+}
 
-    @Post('login')
-    public async login(@Body() loginUserDto: LoginUserDto): 
-       Promise<any> {
-        return await this.authService.login(loginUserDto);
-    }
+@UseGuards(AuthGuard)
+@Get('whoami')
+getProfile(@Request() req) {
+    return req.user;
+}
 
+@HttpCode(HttpStatus.OK)
+@Post('register')
+register(@Body() userData: CreateUserDto) {
+    return this.authService.signUp(userData);
+}
 }

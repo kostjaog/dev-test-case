@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { ExtractJwt } from 'passport-jwt';
 import { CreateRequestDto } from './dto/create-request.dto';
-import { UpdateRequestDto } from './dto/update-request.dto';
+
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class RequestsService {
-  create(createRequestDto: CreateRequestDto) {
-    return 'This action adds a new request';
+  constructor (private readonly prisma: PrismaService) {}
+
+  create(createRequestDto: CreateRequestDto, token: string) {
+    // const user = ExtractJwt.fromAuthHeaderAsBearerToken(token)
+    // console.log(user)
+    return 'ok'
   }
 
   findAll() {

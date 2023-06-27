@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, Request } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
@@ -8,8 +8,9 @@ export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Post()
-  create(@Body() createRequestDto: CreateRequestDto, ) {
-    return this.requestsService.create(createRequestDto);
+  async create(@Request() req, @Body() createRequestDto: CreateRequestDto, @Headers() headers: {authorization: string}) {
+    const response = await this.requestsService.create(createRequestDto, headers.authorization);
+    console.log(req.user)
   }
 
   @Get()
