@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt'
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hash } from 'bcrypt';
+import { SALT_ROUNDS } from 'src/core/config';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +40,7 @@ export class AuthService {
         return await this.prisma.user.create({
           data: {
             ...(userData),
-            password: await hash(userData.password, 7)
+            password: await hash(userData.password, SALT_ROUNDS)
           }
         });
     } catch (error) {

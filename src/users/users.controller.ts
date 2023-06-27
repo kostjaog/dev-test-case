@@ -1,17 +1,5 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Put,
-  Query,
-  Request,
-  UseGuards,
-  UseInterceptors
-} from '@nestjs/common';
-import {ApiQuery, ApiSecurity, ApiTags} from "@nestjs/swagger";
+import { Controller } from '@nestjs/common';
+import { ApiTags } from "@nestjs/swagger";
 import {UsersService} from "./users.service";
 
 @ApiTags('user')
