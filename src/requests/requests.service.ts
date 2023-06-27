@@ -3,7 +3,7 @@ import { AuthPayloadDto } from 'src/auth/dto/auth-payload.dto';
 import { CreateRequestDto } from './dto/create-request.dto';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Request } from '@prisma/client';
+import { REQUEST_STATUS, Request } from '@prisma/client';
 import { ResolveRequestDto } from './dto/resolve-request.dto';
 import { MailService } from 'src/mail/mail.service';
 
@@ -72,11 +72,66 @@ export class RequestsService {
     })
   }
 
-  findAll() {
-    return `This action returns all requests`;
+  async findAll(userPayload: AuthPayloadDto): Promise<Request[]> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: userPayload.email
+      }
+    })
+    if (user.role !== 'MODERATOR') {
+      throw new UnauthorizedException();
+    }
+    return this.prisma.request.findMany({});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} request`;
+  async findFiltered(status: REQUEST_STATUS, dateOrder: 'asc' | 'desc', userPayload: AuthPayloadDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: userPayload.email
+      }
+    })
+    if (user.role !== 'MODERATOR') {
+      throw new UnauthorizedException();
+    }
+
+    return this.prisma.request.findMany({
+      where: {
+        status,
+      },
+      orderBy:{
+        createdAt: dateOrder 
+      }
+    })
+  }
+
+  async findOne(id: string, userPayload: AuthPayloadDto): Promise<Request> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: userPayload.email
+      }
+    })
+    const request = await this.prisma.request.findUnique({
+      where: {
+        id
+      }
+    })
+    if (user.role !== 'MODERATOR' || request.authorId !== user.id) {
+      throw new UnauthorizedException();
+    }
+    return request;
+  }
+
+  async getAllMy(userPayload: AuthPayloadDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: userPayload.email
+      }
+    })
+
+    return this.prisma.request.findMany({
+      where: {
+        authorId: user.id
+      }
+    })
   }
 }

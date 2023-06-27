@@ -20,7 +20,6 @@ export class UsersService {
       if (!candidate) {
         throw new Error('User with provided id does not exist.');
       }
-      console.log(candidate)
       return candidate;
     } catch (error) {
       console.error(error.message);
