@@ -9,7 +9,12 @@ datasource db {
 
 enum USER_ROLE {
   CLIENT
-  ADMINISTRATOR
+  MODERATOR
+}
+
+enum REQUEST_STATUS {
+  ACTIVE
+  RESOLVED
 }
 
 model User {
@@ -20,4 +25,27 @@ model User {
   password  String
 
   role  USER_ROLE @default(CLIENT)
+  
+  createdRequests Request[] @relation(name: "author")
+  moderatedRequests Request[] @relation(name: "moderator")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Request {
+  id  String  @id @default(uuid())
+
+  message String
+  comment String?
+  status  REQUEST_STATUS  @default(ACTIVE)
+
+  authorId  String
+  author    User  @relation(name: "author", references: [id], fields: [authorId])
+
+  moderatorId String?
+  moderator User?  @relation(name: "moderator", references: [id], fields: [moderatorId])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
