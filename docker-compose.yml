@@ -1,12 +1,11 @@
-# docker-compose.yml
-
-version: '3.8'
 services:
   postgres:
     image: postgres:13.5
     restart: always
+    container_name: dev-test-case
     environment:
       - POSTGRES_USER=root
+      - POSTGRES_DB=dev-test-case-database
       - POSTGRES_PASSWORD=root
     volumes:
       - postgres:/var/lib/postgresql/data
