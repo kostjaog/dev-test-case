@@ -43,4 +43,13 @@ export class UsersController {
       };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiSecurity('access-key')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Get('')
+  public async getAllUsers() {
+      const data = this.usersService.findAll()
+      return data;
+  }
+
 }
