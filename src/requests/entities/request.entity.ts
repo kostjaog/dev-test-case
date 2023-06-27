@@ -1,6 +1,6 @@
 import { REQUEST_STATUS, User } from "@prisma/client";
 
-export class Request {
+export class RequestEntity {
     readonly id: string;
 
     readonly message: string;
