@@ -43,8 +43,8 @@ model Request {
   authorId  String
   author    User  @relation(name: "author", references: [id], fields: [authorId])
 
-  moderatorId String
-  moderator User  @relation(name: "moderator", references: [id], fields: [moderatorId])
+  moderatorId String?
+  moderator User?  @relation(name: "moderator", references: [id], fields: [moderatorId])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
