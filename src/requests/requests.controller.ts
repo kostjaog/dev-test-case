@@ -5,7 +5,11 @@ import { UpdateRequestDto } from './dto/update-request.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ResolveRequestDto } from './dto/resolve-request.dto';
 import { REQUEST_STATUS } from '@prisma/client';
+import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Request as RequestEntity } from '@prisma/client';
+// import { RequestEntity } from './entities/request.entity';
 
+@ApiTags('requests')
 @Controller('requests')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
@@ -18,6 +22,7 @@ export class RequestsController {
   }
 
   @UseGuards(AuthGuard)
+  @ApiParam({name: 'requestId', required: true, type: 'string'})
   @Post('/resolve/:requestId')
   async resolve(@Request() req, @Body() resolveRequestDto: ResolveRequestDto, @Param() params: {requestId: string}) {
     const response = await this.requestsService.resolve(resolveRequestDto, req.user, params.requestId);
@@ -31,12 +36,15 @@ export class RequestsController {
   }
 
   @UseGuards(AuthGuard)
-  @Get(':id')
-  findOne(@Request() req, @Param('id') id: string) {
-    return this.requestsService.findOne(id, req.user);
+  @ApiParam({name: 'requestId', required: true, type: 'string'})
+  @Get(':requestId')
+  findOne(@Request() req, @Param('requestId') requestId: string) {
+    return this.requestsService.findOne(requestId, req.user);
   }
 
   @UseGuards(AuthGuard)
+  @ApiParam({name: 'dateOrder', required: true, schema: {enum: ['desc', 'asc']}})
+  @ApiParam({name: 'status', required: true, enum: ['RESOLVED', 'ACTIVE']})
   @Get('/filtered/:status/:dateOrder')
   findFiltered(@Request() req, @Param() params: {status: REQUEST_STATUS, dateOrder: 'asc' | 'desc'}) {
     return this.requestsService.findFiltered(params.status, params.dateOrder, req.user);
