@@ -1,13 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, Request, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Headers, Request, UseGuards } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto } from './dto/create-request.dto';
-import { UpdateRequestDto } from './dto/update-request.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ResolveRequestDto } from './dto/resolve-request.dto';
 import { REQUEST_STATUS } from '@prisma/client';
-import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
-import { Request as RequestEntity } from '@prisma/client';
-// import { RequestEntity } from './entities/request.entity';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('requests')
 @Controller('requests')
