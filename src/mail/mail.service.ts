@@ -7,11 +7,16 @@ export class MailService {
 
   async sendUserResolveInfo(email: string, comment: string) {
 
-    await this.mailerService.sendMail({
+    try{
+      await this.mailerService.sendMail({
       to: email,
       from: '"Support Team" <support@example.com>',
       subject: 'Request resolve info',
       context: {comment},
-    });
+      });
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
   }
 }

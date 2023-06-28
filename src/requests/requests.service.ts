@@ -33,105 +33,130 @@ export class RequestsService {
   }
 
   async resolve(resolveRequestDto: ResolveRequestDto, userPayload: AuthPayloadDto, requestId: string): Promise<Request> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: userPayload.email
+    try{
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: userPayload.email
+        }
+      })
+      if (!user || user.role !== 'MODERATOR') {
+        throw new UnauthorizedException();
       }
-    })
-    if (!user || user.role !== 'MODERATOR') {
-      throw new UnauthorizedException();
-    }
-    const oldRequest = await this.prisma.request.findUnique({
-      where: {
-        id: requestId
-      },
-      include: {
-        author: true
+      const oldRequest = await this.prisma.request.findUnique({
+        where: {
+          id: requestId
+        },
+        include: {
+          author: true
+        }
+      })
+
+      if (!oldRequest) {
+        throw new HttpException('No request with provided id', HttpStatus.BAD_REQUEST)
       }
-    })
+      // This will send email-message in case of real mail credentials
+      // await this.mailService.sendUserResolveInfo(oldRequest.author.email, resolveRequestDto.comment); 
 
-    if (!oldRequest) {
-      throw new HttpException('No request with provided id', HttpStatus.BAD_REQUEST)
-    }
-    // This will send email-message in case of real mail credentials
-    // await this.mailService.sendUserResolveInfo(oldRequest.author.email, resolveRequestDto.comment); 
-
-    return this.prisma.request.update({
-      where: {
-        id: requestId
-      },
-      data: {
-        comment: resolveRequestDto.comment,
-        status: 'RESOLVED',
-        moderator: {
-          connect: {
-            id: user.id
+      return this.prisma.request.update({
+        where: {
+          id: requestId
+        },
+        data: {
+          comment: resolveRequestDto.comment,
+          status: 'RESOLVED',
+          moderator: {
+            connect: {
+              id: user.id
+            }
           }
         }
-      }
-    })
+      })
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
   }
 
   async findAll(userPayload: AuthPayloadDto): Promise<Request[]> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: userPayload.email
+    try{
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: userPayload.email
+        }
+      })
+      if (user.role !== 'MODERATOR') {
+        throw new UnauthorizedException();
       }
-    })
-    if (user.role !== 'MODERATOR') {
-      throw new UnauthorizedException();
+      return this.prisma.request.findMany({});
+    } catch (error) {
+      console.error(error.message);
+      throw error;
     }
-    return this.prisma.request.findMany({});
   }
 
-  async findFiltered(status: REQUEST_STATUS, dateOrder: 'asc' | 'desc', userPayload: AuthPayloadDto) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: userPayload.email
+  async findFiltered(status: REQUEST_STATUS, dateOrder: 'asc' | 'desc', userPayload: AuthPayloadDto): Promise<Request[]> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: userPayload.email
+        }
+      })
+      if (user.role !== 'MODERATOR') {
+        throw new UnauthorizedException();
       }
-    })
-    if (user.role !== 'MODERATOR') {
-      throw new UnauthorizedException();
-    }
 
-    return this.prisma.request.findMany({
-      where: {
-        status,
-      },
-      orderBy:{
-        createdAt: dateOrder 
-      }
-    })
+      return this.prisma.request.findMany({
+        where: {
+          status,
+        },
+        orderBy:{
+          createdAt: dateOrder 
+        }
+      })
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   async findOne(id: string, userPayload: AuthPayloadDto): Promise<Request> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: userPayload.email
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: userPayload.email
+        }
+      })
+      const request = await this.prisma.request.findUnique({
+        where: {
+          id
+        }
+      })
+      if (user.role !== 'MODERATOR' || request.authorId !== user.id) {
+        throw new UnauthorizedException();
       }
-    })
-    const request = await this.prisma.request.findUnique({
-      where: {
-        id
-      }
-    })
-    if (user.role !== 'MODERATOR' || request.authorId !== user.id) {
-      throw new UnauthorizedException();
+      return request;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
     }
-    return request;
   }
 
-  async getAllMy(userPayload: AuthPayloadDto) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: userPayload.email
-      }
-    })
+  async getAllMy(userPayload: AuthPayloadDto): Promise<Request[]> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: userPayload.email
+        }
+      })
 
-    return this.prisma.request.findMany({
-      where: {
-        authorId: user.id
-      }
-    })
+      return this.prisma.request.findMany({
+        where: {
+          authorId: user.id
+        }
+      })
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
   }
 }

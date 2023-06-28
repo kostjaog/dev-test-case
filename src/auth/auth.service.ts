@@ -13,16 +13,21 @@ export class AuthService {
   constructor(private readonly usersService: UsersService, private readonly jwtService: JwtService, private readonly prisma: PrismaService) {}
 
   async signIn(email: string, password: string) {
-    const user = await this.usersService.findOne(email);
-    const passMatch = await bcrypt.compare(password, user.password)
+    try{
+      const user = await this.usersService.findOne(email);
+      const passMatch = await bcrypt.compare(password, user.password)
 
-    if (!passMatch) {
-      throw new UnauthorizedException();
+      if (!passMatch) {
+        throw new UnauthorizedException();
+      }
+      const payload = { email: user.email, sub: user.id };
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+      };
+    }catch (error) {
+      console.error(error.message)
+      throw error;
     }
-    const payload = { email: user.email, sub: user.id };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
   }
 
   async signUp(userData: CreateUserDto) {
